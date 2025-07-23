@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/AlexSamarskii/web_crawler/internal/config"
+	redisqueue "github.com/AlexSamarskii/web_crawler/internal/redis"
 )
 
 func main() {
@@ -13,6 +14,8 @@ func main() {
 	}
 
 	maxWorkers := conf.Crawler.MaxWorkers
+
+	redisClient := redisqueue.NewRedisClient("localhost:6379")
 	// resultCh := make(chan string, maxWorkers)
 
 	// seedURLs := []string{
