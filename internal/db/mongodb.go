@@ -24,10 +24,14 @@ func NewDatabase(uri string) *Database {
 func (db *Database) StoreLinks(url string, links []string) {
 	collection := db.client.Database("crawler").Collection("urls")
 
+	var operations []mongo.WriteModel
 	for _, link := range links {
-		_, err := collection.InsertOne(context.Background(), bson.M{"url": url, "link": link})
-		if err != nil {
-			log.Printf("Error storing link for %s: %v", url, err)
-		}
+		op := mongo.NewInsertOneModel().SetDocument(bson.M{"url": url, "link": link})
+		operations = append(operations, op)
+	}
+
+	_, err := collection.BulkWrite(context.Background(), operations)
+	if err != nil {
+		log.Printf("Bulk insert failed for %s: %v", url, err)
 	}
 }

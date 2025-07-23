@@ -20,7 +20,7 @@ type CrawlerConfig struct {
 }
 
 type DatebaseConfig struct {
-	connStr string `yaml:"conn_str"`
+	ConnStr string `yaml:"conn_str"`
 }
 
 type RedisConfig struct {
