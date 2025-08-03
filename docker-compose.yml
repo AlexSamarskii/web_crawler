@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: crawler-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass ""  
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:6
+    container_name: crawler-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: crawler_db
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+  crawler:
+    build: .
+    container_name: crawler-cli
+    depends_on:
+      - redis
+      - mongo
+    environment:
+      - REDIS_ADDR=redis:6379
+      - MONGO_URI=mongodb://mongo:27017
+    command: ./crawler-cli crawl --seed https://golang.org --workers 3 --timeout 5m
+    restart: on-failure
+
+volumes:
+  mongo_data:
