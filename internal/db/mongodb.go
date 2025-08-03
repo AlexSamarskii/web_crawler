@@ -14,7 +14,7 @@ type Database struct {
 }
 
 func NewDatabase(uri string) *Database {
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -12,6 +11,7 @@ import (
 	"github.com/AlexSamarskii/web_crawler/internal/config"
 	"github.com/AlexSamarskii/web_crawler/internal/crawler"
 	"github.com/AlexSamarskii/web_crawler/internal/db"
+	"github.com/AlexSamarskii/web_crawler/internal/limiter"
 	redisqueue "github.com/AlexSamarskii/web_crawler/internal/redis"
 )
 
@@ -28,6 +28,8 @@ func main() {
 	database := db.NewDatabase(conf.Database.ConnStr)
 
 	resultCh := make(chan string, maxWorkers)
+
+	domainLimiter := limiter.NewDomainLimiter()
 
 	seedURLs := []string{
 		"https://golang.org",
@@ -46,7 +48,7 @@ func main() {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
-			crawler.StartWorker(id, redisClient, database, resultCh)
+			crawler.StartWorker(id, redisClient, database, resultCh, domainLimiter)
 		}(i)
 	}
 
@@ -55,7 +57,7 @@ func main() {
 
 	go func() {
 		for msg := range resultCh {
-			fmt.Println(msg)
+			log.Println(msg)
 		}
 	}()
 

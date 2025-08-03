@@ -11,29 +11,44 @@ import (
 	"time"
 
 	"github.com/AlexSamarskii/web_crawler/internal/db"
+	"github.com/AlexSamarskii/web_crawler/internal/limiter"
 	redisqueue "github.com/AlexSamarskii/web_crawler/internal/redis"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
-func StartWorker(id int, redisClient *redisqueue.RedisClient, db *db.Database, result chan string) {
+func StartWorker(id int, redisClient *redisqueue.RedisClient, db *db.Database, result chan string, domainLimiter *limiter.DomainLimiter) {
 	for {
 		log.Printf("Воркер начал искать URL %d", id)
-		url := redisClient.PopNextURL()
-		if url == "" {
+		urls := redisClient.PopNextURL()
+		if urls == "" {
 			log.Printf("Не найден URL воркером %d", id)
 			break
 		}
 
-		depths, err := redisClient.GetClient().HGet(redisClient.GetCtx(), "url_depths", url).Result()
+		parsedURL, err := url.Parse(urls)
+		if err != nil {
+			log.Printf("Ошибка парсинга URL %s: %v", urls, err)
+			result <- "Ошибка парсинга: " + urls
+			continue
+		}
+
+		limiter := domainLimiter.GetLimiter(parsedURL.Host)
+
+		// Ждём, пока лимитер разрешит запрос
+		for !limiter.Allow() {
+			time.Sleep(100 * time.Millisecond) // Проверяем каждые 100мс
+		}
+
+		depths, err := redisClient.GetClient().HGet(redisClient.GetCtx(), "url_depths", urls).Result()
 
 		if err != nil {
-			log.Printf("%d, Ошибка определения глубины для %s, 0 по умолчанию", id, url)
+			log.Printf("%d, Ошибка определения глубины для %s, 0 по умолчанию", id, urls)
 		}
 
 		depth, _ := strconv.Atoi(depths)
 
-		crawlURL(url, depth, redisClient, result, db)
+		crawlURL(urls, depth, redisClient, result, db)
 	}
 }
 
