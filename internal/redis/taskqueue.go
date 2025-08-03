@@ -2,12 +2,11 @@ package redis
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"time"
 
-	"github.com/AlexSamarskii/web_crawler/pkg/connector"
 	"github.com/go-redis/redis/v8"
-
-	cfg "github.com/AlexSamarskii/web_crawler/internal/config"
 )
 
 type RedisClient struct {
@@ -24,21 +23,25 @@ func (r *RedisClient) GetCtx() context.Context {
 }
 
 func NewRedisClient(addr string) *RedisClient {
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     addr,
-		Password: "",
-		DB:       0,
+	client := redis.NewClient(&redis.Options{
+		Addr:         addr,
+		Password:     "",
+		DB:           0,
+		DialTimeout:  5 * time.Second,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 5 * time.Second,
+		PoolSize:     10,
 	})
 
-	_, err := connector.NewRedisConnection(cfg.RedisConfig{})
-	if err != nil {
-		log.Fatalf("не удалось установить соединение с Redis: %v", err)
+	ctx := context.Background()
+
+	if _, err := client.Ping(ctx).Result(); err != nil {
+		panic(fmt.Sprintf("Failed to connect to Redis at %s: %v", addr, err))
 	}
-	log.Println("успешно установлено соединение с Redis")
 
 	return &RedisClient{
-		client: rdb,
-		ctx:    context.Background(),
+		client: client,
+		ctx:    ctx,
 	}
 }
 

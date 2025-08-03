@@ -11,6 +11,7 @@ import (
 
 func NewRedisConnection(cfg config.RedisConfig) (redis.Conn, error) {
 	address := fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)
+	fmt.Println(address)
 	conn, err := redis.Dial("tcp", address,
 		redis.DialPassword(cfg.Password),
 		redis.DialDatabase(cfg.DB),

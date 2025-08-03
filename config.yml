@@ -1,0 +1,14 @@
+redis:
+  host: "localhost"
+  port: "6379"
+  password: ""
+  db: 0
+
+crawler:
+  user_agent: "Go-Crawler-Bot"
+  max_workers: 5
+  rate_limit: 5
+  log_level: "info"
+
+database:
+  conn_str: "mongodb://localhost:27017"

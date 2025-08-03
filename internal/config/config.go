@@ -9,7 +9,7 @@ import (
 
 type Config struct {
 	Crawler  CrawlerConfig  `yaml:"crawler"`
-	Database DatebaseConfig `yaml:"database"`
+	Database DatabaseConfig `yaml:"database"`
 	Redis    RedisConfig    `yaml:"redis"`
 }
 
@@ -19,7 +19,7 @@ type CrawlerConfig struct {
 	RateLimit  int    `yaml:"rate_limit"`
 }
 
-type DatebaseConfig struct {
+type DatabaseConfig struct {
 	ConnStr string `yaml:"conn_str"`
 }
 
@@ -43,5 +43,10 @@ func LoadConfig() (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error parsing YAML: %w", err)
 	}
+
+	fmt.Printf("Config loaded: %+v\n", cfg)
+	fmt.Printf("MongoDB ConnStr: '%s'\n", cfg.Database.ConnStr)
+	fmt.Printf("Redis: %s:%s\n", cfg.Redis.Host, cfg.Redis.Port)
+
 	return &cfg, nil
 }
