@@ -1,6 +1,6 @@
 # Go Web Crawler
 
-Многопоточный веб-краулер на языке Go, который безопасно и этично сканирует сайты, извлекает ссылки и хранит данные. Поддерживает `robots.txt`, ограничение частоты запросов, метрики и HTTP API для управления.
+Многопоточный веб-краулер на языке Go, который безопасно и этично сканирует сайты, извлекает ссылки и хранит данные. Поддерживает `robots.txt`, Leaky Bucket rate limiting, Prometheus и CLI-интерфейс.
 
 ---
 
@@ -14,13 +14,6 @@
 - CLI-интерфейс на базе [Cobra](https://github.com/spf13/cobra)
 
 ---
-
-## Запуск
-
-```bash
-go build -o crawler-cli
-./crawler-cli crawl --seed https://golang.org --workers 5 --timeout 2m
-```
 
 ```text
 +----------------+ +--------+ +-----------+
@@ -52,6 +45,13 @@ crawler:
   user_agent: "Go-Crawler-Bot"
   max_workers: 5
   rate_limit: 5
+```
+
+## Запуск
+
+```bash
+go build -o crawler-cli
+./crawler-cli crawl --seed https://golang.org --workers 5 --timeout 2m
 ```
 
 ### Пример запуска
